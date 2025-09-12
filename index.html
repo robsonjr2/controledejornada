@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle de Jornada</title>
+  <style>
+    :root {
+      --bg-color-light: #f0f0f0;
+      --text-color-light: #222;
+      --card-color-light: #ffffff;
+
+      --bg-color-dark: #1e1e1e;
+      --text-color-dark: #e0e0e0;
+      --card-color-dark: #2a2a2a;
+
+      --primary-blue: #007acc;
+      --primary-blue-dark: #005fa3;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      border-radius: 10px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    body.light {
+      background-color: var(--bg-color-light);
+      color: var(--text-color-light);
+    }
+
+    body.dark {
+      background-color: var(--bg-color-dark);
+      color: var(--text-color-dark);
+    }
+
+    .card {
+      background-color: var(--card-color-light);
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      transition: background 0.3s;
+    }
+
+    body.dark .card {
+      background-color: var(--card-color-dark);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .data-atual {
+      text-align: center;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 5px;
+      font-weight: 600;
+    }
+
+    input, select {
+      padding: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 14px;
+      width: 100%;
+      background: var(--primary-blue);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: var(--primary-blue-dark);
+    }
+
+    .resultado {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 10px;
+      text-align: center;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    body.dark .resultado {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-color-dark);
+    }
+
+    footer {
+      margin-top: 30px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      color: #d10000;
+      text-shadow: 1px 1px 3px orange;
+    }
+
+    .theme-toggle {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+
+    .theme-toggle button {
+      background: transparent;
+      color: inherit;
+      border: 1px solid currentColor;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="light">
+
+  <div class="card">
+    <div class="theme-toggle">
+      <button onclick="alternarTema()">🌙 Alternar Tema</button>
+    </div>
+
+    <h2>Controle de Jornada</h2>
+    <div class="data-atual" id="dataAtual"></div>
+
+    <label for="entrada">Hora de Entrada:</label>
+    <input type="time" id="entrada">
+
+    <label for="saidaIntervalo">Saída para Intervalo:</label>
+    <input type="time" id="saidaIntervalo">
+
+    <label for="voltaIntervalo">Volta do Intervalo:</label>
+    <input type="time" id="voltaIntervalo">
+
+    <label for="saidaFinal">Hora de Saída (deixe em branco para calcular):</label>
+    <input type="time" id="saidaFinal">
+
+    <label for="jornada">Jornada de Trabalho:</label>
+    <select id="jornada">
+      <option value="440">7 horas e 20 minutos</option>
+      <option value="480" selected>8 horas</option>
+    </select>
+
+    <button onclick="calcularJornada()">Calcular Jornada</button>
+
+    <div class="resultado" id="resultado"></div>
+  </div>
+
+  <footer>
+      
+  </footer>
+
+  <script>
+    function calcularMinutos(hora) {
+      const [h, m] = hora.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function formatarMinutosParaHora(minutos) {
+      let h = Math.floor(minutos / 60);
+      let m = minutos % 60;
+      if (h >= 24) h = h % 24;
+      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    }
+
+    function formatarMinutos(min) {
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return `${h}h ${m.toString().padStart(2, "0")}min`;
+    }
+
+    function preencherDataAtual() {
+      const agora = new Date();
+      const dataFormatada = agora.toLocaleDateString("pt-BR", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+      document.getElementById("dataAtual").textContent = `📅 Hoje é ${dataFormatada}`;
+    }
+
+    function calcularJornada() {
+      const entrada = document.getElementById("entrada").value;
+      const saidaIntervalo = document.getElementById("saidaIntervalo").value;
+      const voltaIntervalo = document.getElementById("voltaIntervalo").value;
+      const saidaFinal = document.getElementById("saidaFinal").value;
+      const jornadaSelecionada = parseInt(document.getElementById("jornada").value);
+      const resultado = document.getElementById("resultado");
+
+      if (!entrada || !saidaIntervalo || !voltaIntervalo) {
+        resultado.innerHTML = "⚠️ Por favor, preencha todos os campos obrigatórios.";
+        return;
+      }
+
+      const entradaMin = calcularMinutos(entrada);
+      const saidaIntMin = calcularMinutos(saidaIntervalo);
+      const voltaIntMin = calcularMinutos(voltaIntervalo);
+
+      const tempoAntesInt = saidaIntMin - entradaMin;
+      const intervaloReal = voltaIntMin - saidaIntMin;
+      const tempoDepoisInt = saidaFinal ? calcularMinutos(saidaFinal) - voltaIntMin : 0;
+      const tempoTrabalhado = tempoAntesInt + tempoDepoisInt;
+
+      if (!saidaFinal) {
+        const restante = jornadaSelecionada - tempoAntesInt;
+        const saidaCalculada = voltaIntMin + restante;
+        const horaSaidaCalculada = formatarMinutosParaHora(saidaCalculada);
+        const diaSeguinte = saidaCalculada >= 1440 ? "<br><small>⚠️ Observação: saída no dia seguinte</small>" : "";
+
+        resultado.innerHTML = `
+          <strong>🕒 Hora estimada de saída:</strong> ${horaSaidaCalculada}<br>
+          Para cumprir uma jornada de <strong>${formatarMinutos(jornadaSelecionada)}</strong>.<br>
+          <small>⏱️ Você tirou ${formatarMinutos(intervaloReal)} de intervalo.</small>
+          ${diaSeguinte}
+        `;
+        return;
+      }
+
+      let mensagem = `<strong>Tempo Trabalhado:</strong> ${formatarMinutos(tempoTrabalhado)}<br>`;
+
+      if (tempoTrabalhado === jornadaSelecionada) {
+        mensagem += "✅ Você cumpriu sua jornada.";
+      } else if (tempoTrabalhado > jornadaSelecionada) {
+        const extra = tempoTrabalhado - jornadaSelecionada;
+        mensagem += `🟢 Você fez ${formatarMinutos(extra)} a mais hoje.`;
+      } else {
+        const faltam = jornadaSelecionada - tempoTrabalhado;
+        mensagem += `🔴 Faltam ${formatarMinutos(faltam)} para completar a jornada.`;
+      }
+
+      mensagem += `<br><small>⏱️ Você tirou ${formatarMinutos(intervaloReal)} de intervalo.</small>`;
+      resultado.innerHTML = mensagem;
+    }
+
+    function alternarTema() {
+      const body = document.body;
+      body.classList.toggle("dark");
+      body.classList.toggle("light");
+    }
+
+    window.onload = preencherDataAtual;
+  </script>
+
+</body>
+</html>
